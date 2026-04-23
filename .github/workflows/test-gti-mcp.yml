@@ -1,0 +1,37 @@
+name: Test GTI MCP
+
+on:
+  push:
+    paths:
+      - 'server/gti/**'
+      - '.github/workflows/test-gti-mcp.yml'
+  pull_request:
+    paths:
+      - 'server/gti/**'
+      - '.github/workflows/test-gti-mcp.yml'
+  workflow_dispatch:
+
+jobs:
+  test-gti-mcp:
+    runs-on: ubuntu-latest
+    env:
+      VT_APIKEY: dummy_api_key
+    defaults:
+      run:
+        working-directory: server/gti
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install GTI dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[test]"
+
+      - name: Run GTI tests
+        run: python -m pytest -q tests

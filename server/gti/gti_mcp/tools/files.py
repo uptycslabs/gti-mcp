@@ -316,7 +316,7 @@ async def search_digital_threat_monitoring(
   - Wildcard/Regex queries match single tokens, not phrases.
 
   Special Characters:
-  - Escape with \: ` + - & | ! ( ) { } [ ] ^ " ~ * ? : / ` and space.
+  - Escape with \\: ` + - & | ! ( ) { } [ ] ^ " ~ * ? : / ` and space.
   - Example: To find "(1+1):2", query \(1\+1\)\:2
 
   Case Sensitivity:

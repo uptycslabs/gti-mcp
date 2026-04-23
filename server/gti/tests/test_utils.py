@@ -14,8 +14,9 @@
 # limitations under the License.
 import pytest
 import vt
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock, AsyncMock, patch
 from gti_mcp import utils
+from gti_mcp import server as server_module
 
 @pytest.mark.asyncio
 async def test_fetch_object_handles_api_error():
@@ -41,3 +42,15 @@ async def test_fetch_object_handles_api_error():
     assert f"VirusTotal API Error: {error_code} - {error_message}" in result["error"]
     assert "details" in result
     assert "The requested domain 'test.com' could not be found" in result["details"]
+
+
+def test_vt_client_factory_sets_x_tool_header(monkeypatch):
+    monkeypatch.setenv("VT_APIKEY", "dummy_api_key")
+
+    with patch("gti_mcp.server.vt.Client") as mock_client:
+        server_module._vt_client_factory(None)
+
+    mock_client.assert_called_once_with(
+        "dummy_api_key",
+        headers={"x-tool": server_module.TOOL_HEADER_VALUE},
+    )
