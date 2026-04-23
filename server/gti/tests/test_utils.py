@@ -52,5 +52,5 @@ def test_vt_client_factory_sets_x_tool_header(monkeypatch):
 
     mock_client.assert_called_once_with(
         "dummy_api_key",
-        custom_headers={"x-tool": server_module.TOOL_HEADER_VALUE},
+        headers={"x-tool": server_module.TOOL_HEADER_VALUE},
     )
