@@ -39,13 +39,17 @@ async def test_server_connection():
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.parametrize(
     argnames=[
-        "tool_name", "tool_arguments", "vt_endpoint", "vt_object_response", "expected",
+        "tool_name", "tool_arguments", "vt_endpoint", "vt_request_params", "vt_object_response", "expected",
     ],
     argvalues=[
         (
             "get_file_report",
             {"hash": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"},
             "/api/v3/files/275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+            {
+                "exclude_attributes": "last_analysis_results",
+                "relationships": ",".join(tools.FILE_KEY_RELATIONSHIPS),
+            },
             {
                 "data": {
                     "id": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
@@ -71,6 +75,18 @@ async def test_server_connection():
             "get_file_behavior_report",
             {"file_behaviour_id": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f_VirusTotal Jujubox"},
             "/api/v3/file_behaviours/275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f_VirusTotal Jujubox",
+            {
+                "relationships": ",".join([
+                    "contacted_domains",
+                    "contacted_ips",
+                    "contacted_urls",
+                    "dropped_files",
+                    "embedded_domains",
+                    "embedded_ips",
+                    "embedded_urls",
+                    "associations",
+                ]),
+            },
             {
                 "data": {
                     "id": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f_VirusTotal Jujubox",
@@ -115,6 +131,10 @@ async def test_server_connection():
             {"domain": "theevil.com"},
             "/api/v3/domains/theevil.com",
             {
+                "exclude_attributes": "last_analysis_results",
+                "relationships": ",".join(tools.DOMAIN_KEY_RELATIONSHIPS),
+            },
+            {
                 "data": {
                     "id": "theevil.com",
                     "type": "domain",
@@ -139,6 +159,10 @@ async def test_server_connection():
             "get_ip_address_report",
             {"ip_address": "8.8.8.8"},
             "/api/v3/ip_addresses/8.8.8.8",
+            {
+                "exclude_attributes": "last_analysis_results",
+                "relationships": ",".join(tools.IP_KEY_RELATIONSHIPS),
+            },
             {
                 "data": {
                     "id": "8.8.8.8",
@@ -165,6 +189,10 @@ async def test_server_connection():
             {"url": "http://theevil.com/"},
             "/api/v3/urls/aHR0cDovL3RoZWV2aWwuY29tLw",
             {
+                "exclude_attributes": "last_analysis_results",
+                "relationships": ",".join(tools.URL_KEY_RELATIONSHIPS),
+            },
+            {
                 "data": {
                     "id": "970281e76715a46d571ac5bbcef540145f54e1a112751ccf616df2b3c6fe9de4",
                     "type": "url",
@@ -190,6 +218,10 @@ async def test_server_connection():
             {"id": "collection_id"},
             "/api/v3/collections/collection_id",
             {
+                "exclude_attributes": tools.COLLECTION_EXCLUDED_ATTRS,
+                "relationships": ",".join(tools.COLLECTION_KEY_RELATIONSHIPS),
+            },
+            {
                 "data": {
                     "id": "collection_id",
                     "type": "collection",
@@ -214,6 +246,7 @@ async def test_server_connection():
             "get_threat_profile",
             {"profile_id": "profile_id"},
             "/api/v3/threat_profiles/profile_id",
+            None,
             {
                 "data": {
                     "id": "profile_id",
@@ -231,6 +264,7 @@ async def test_server_connection():
             "get_hunting_ruleset",
             {"ruleset_id": "ruleset_id"},
             "/api/v3/intelligence/hunting_rulesets/ruleset_id",
+            None,
             {
                 "data": {
                     "id": "ruleset_id",
@@ -245,7 +279,7 @@ async def test_server_connection():
             },
         ),
     ],
-    indirect=["vt_endpoint", "vt_object_response"],
+    indirect=["vt_endpoint", "vt_request_params", "vt_object_response"],
 )
 @pytest.mark.usefixtures("vt_get_object_mock")
 async def test_get_reports(

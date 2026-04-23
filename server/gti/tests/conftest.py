@@ -31,7 +31,7 @@ def fixture_vt_object_response(request) -> dict[str, typing.Any]:
 
 @pytest.fixture(name="vt_request_params")
 def fixture_vt_request_params(request) -> dict[str, typing.Any]:
-  return request.param
+  return getattr(request, "param", None)
 
 
 @pytest_asyncio.fixture(name="mock_vt_client", loop_scope="session", autouse=True)
@@ -50,12 +50,18 @@ async def fixture_mock_vt_client(
 
 @pytest.fixture(name="vt_get_object_mock")
 def fixture_vt_get_object_mock(
-    make_httpserver_ipv4, vt_endpoint, vt_object_response):
+    make_httpserver_ipv4, vt_endpoint, vt_object_response, vt_request_params):
   # Mock get object request.
+  request_kwargs = {
+      "method": "GET",
+      "headers": {"X-Apikey": "dummy_api_key"},
+  }
+  if vt_request_params is not None:
+    request_kwargs["query_string"] = vt_request_params
+
   make_httpserver_ipv4.expect_request(
       vt_endpoint,
-      method="GET",
-      headers={"X-Apikey": "dummy_api_key", "x-tool": "uptycs:prod"},
+      **request_kwargs,
   ).respond_with_json(vt_object_response)
   return make_httpserver_ipv4
 
@@ -67,7 +73,7 @@ def fixture_vt_get_object_with_params_mock(
   make_httpserver_ipv4.expect_request(
       vt_endpoint,
       method="GET",
-      headers={"X-Apikey": "dummy_api_key", "x-tool": "uptycs:prod"},
+      headers={"X-Apikey": "dummy_api_key"},
       query_string=vt_request_params,
   ).respond_with_json(vt_object_response)
   return make_httpserver_ipv4
@@ -80,7 +86,7 @@ def fixture_vt_post_object_mock(
   make_httpserver_ipv4.expect_request(
       vt_endpoint,
       method="POST",
-      headers={"X-Apikey": "dummy_api_key", "x-tool": "uptycs:prod"},
+      headers={"X-Apikey": "dummy_api_key"},
       json=vt_request_params,
   ).respond_with_json(vt_object_response)
   return make_httpserver_ipv4
@@ -93,7 +99,7 @@ def fixture_vt_patch_object_mock(
   make_httpserver_ipv4.expect_request(
       vt_endpoint,
       method="PATCH",
-      headers={"X-Apikey": "dummy_api_key", "x-tool": "uptycs:prod"},
+      headers={"X-Apikey": "dummy_api_key"},
       json=vt_request_params,
   ).respond_with_json(vt_object_response)
   return make_httpserver_ipv4
@@ -106,7 +112,7 @@ def fixture_vt_delete_object_mock(
   make_httpserver_ipv4.expect_request(
       vt_endpoint,
       method="DELETE",
-      headers={"X-Apikey": "dummy_api_key", "x-tool": "uptycs:prod"},
+      headers={"X-Apikey": "dummy_api_key"},
       json=vt_request_params,
   ).respond_with_json(vt_object_response, status=200)
   return make_httpserver_ipv4
